@@ -5,7 +5,7 @@ import {
   state, closeDrawer, setDrawerTab, getRequirement,
   getActiveBlockersFor, getChangesFor, getNotesFor, getDependenciesFor,
   updateRequirement, addProgressNote, resolveBlocker, addBlocker,
-  simulateDelayPropagation,
+  deleteRequirement, simulateDelayPropagation,
 } from '../store/store.js';
 import { noteTypes, blockerTypes, statuses, priorities, businessLines } from '../data/mockData.js';
 import { escapeHtml, formatDate, relativeTime, renderMarkdown, toast, addDays } from '../utils/helpers.js';
@@ -43,8 +43,11 @@ export function renderDrawer(root) {
               <button id="ask-agent-btn" class="px-2.5 py-1 text-xs rounded-md bg-gradient-to-r from-brand-600 to-brand-700 text-white hover:shadow-md">
                 💬 问它一下
               </button>
-              <button class="btn-icon" id="drawer-close">
-                <i class="lucide lucide-x"></i>
+              <button id="delete-req-btn" class="px-2.5 py-1 text-xs rounded-md text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-400 transition-colors" title="删除需求">
+                🗑 删除
+              </button>
+              <button class="btn-icon" id="drawer-close" title="关闭">
+                ×
               </button>
             </div>
           </div>
@@ -93,6 +96,26 @@ export function renderDrawer(root) {
   root.querySelector('#ask-agent-btn')?.addEventListener('click', () => {
     import('./Chat.js').then(({ openChatWithQuestion }) => {
       openChatWithQuestion(`${r.code} 现在进展怎么样？`);
+    });
+  });
+
+  root.querySelector('#delete-req-btn')?.addEventListener('click', () => {
+    openModal({
+      title: '确认删除',
+      icon: '⚠️',
+      content: `
+        <div class="text-sm text-gray-700">
+          <p>确定要删除 <b>${escapeHtml(r.code)}</b>《${escapeHtml(r.title)}》吗？</p>
+          <p class="mt-2 text-xs text-red-600">此操作将同时删除该需求的所有进展记录、变更历史、阻塞项和依赖关系，<b>不可恢复</b>。</p>
+        </div>
+      `,
+      confirmText: '确认删除',
+      onConfirm: async (close) => {
+        close();
+        closeDrawer();
+        await deleteRequirement(r.id);
+        toast(`已删除 ${r.code}`, 'success');
+      }
     });
   });
 

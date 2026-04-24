@@ -21,6 +21,8 @@ let chatMessages = [
 
 // 当前正在流式的控制器（支持中断）
 let currentStreamController = null;
+// 标记是否正在 streaming，防止全量 render 破坏增量 DOM 更新
+let isStreaming = false;
 
 const PRESET_QUESTIONS = [
   'REQ-42 现在进展怎么样？',
@@ -32,6 +34,14 @@ const PRESET_QUESTIONS = [
 ];
 
 export function renderChat(root) {
+  // 🔒 如果正在 streaming，跳过全量重渲染，避免破坏 SSE 增量 DOM 更新
+  if (isStreaming && state.chatOpen && root.querySelector('#chat-messages')) {
+    // 只更新浮条按钮可见性
+    const toggle = root.querySelector('#chat-toggle');
+    if (toggle) toggle.classList.add('hidden');
+    return;
+  }
+
   root.innerHTML = `
     <!-- 浮条按钮 -->
     <button id="chat-toggle" class="fixed bottom-5 right-5 z-30 px-4 py-2.5 bg-gradient-to-r from-brand-600 to-brand-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 ${state.chatOpen ? 'hidden' : ''}">
@@ -234,6 +244,7 @@ async function askAgent(question) {
   if (state.mode === 'online' && state.llmEnabled) {
     setSendButtonMode('abort');
     currentStreamController = new AbortController();
+    isStreaming = true;
 
     try {
       const { askAgentStream } = await import('../api/agent.js');
@@ -248,6 +259,7 @@ async function askAgent(question) {
         // onDone
         () => {
           placeholder.streaming = false;
+          isStreaming = false;
           updateMessageDom(placeholder); // 重渲染去掉 pending 标记
           setSendButtonMode('send');
           currentStreamController = null;
@@ -268,6 +280,7 @@ async function askAgent(question) {
             placeholder.citations = fallback.citations;
           }
           placeholder.streaming = false;
+          isStreaming = false;
           updateMessageDom(placeholder);
           setSendButtonMode('send');
           currentStreamController = null;
@@ -279,6 +292,7 @@ async function askAgent(question) {
     } catch (e) {
       console.error('[Chat] askAgentStream 异常:', e);
       // 走到下面的本地规则引擎兜底
+      isStreaming = false;
       setSendButtonMode('send');
       currentStreamController = null;
     }

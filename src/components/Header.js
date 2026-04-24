@@ -5,7 +5,7 @@ import {
   state, setView, updateFilters, openExtractor,
   exportJson, exportCsv, importJson, resetData, addRequirement,
 } from '../store/store.js';
-import { toast, nextReqCode, escapeHtml } from '../utils/helpers.js';
+import { toast, escapeHtml } from '../utils/helpers.js';
 import { openModal } from './Modal.js';
 
 export function renderHeader(root) {
@@ -150,7 +150,6 @@ function download(content, filename, mime) {
 
 function openNewReqModal() {
   import('../data/mockData.js').then(({ businessLines, statuses, priorities }) => {
-    const code = nextReqCode(state.requirements);
     openModal({
       title: '新建需求',
       icon: '📝',
@@ -159,7 +158,7 @@ function openNewReqModal() {
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs text-gray-500 mb-1">需求编号</label>
-              <input disabled value="${code}" class="w-full px-3 py-1.5 border rounded bg-gray-50 text-gray-500"/>
+              <input disabled value="（后端自动分配）" class="w-full px-3 py-1.5 border rounded bg-gray-50 text-gray-400 italic"/>
             </div>
             <div>
               <label class="block text-xs text-gray-500 mb-1">优先级</label>
@@ -217,25 +216,29 @@ function openNewReqModal() {
         </form>
       `,
       confirmText: '创建',
-      onConfirm: (close) => {
+      onConfirm: async (close) => {
         const form = document.getElementById('new-req-form');
         const fd = new FormData(form);
         if (!fd.get('title')) { toast('请填写标题', 'error'); return; }
-        addRequirement({
-          code,
-          title: fd.get('title'),
-          business_line: fd.get('business_line'),
-          status: fd.get('status'),
-          priority: fd.get('priority'),
-          owner: fd.get('owner'),
-          dev_owner: fd.get('dev_owner'),
-          planned_start: fd.get('planned_start') || null,
-          planned_end: fd.get('planned_end') || null,
-          description: fd.get('description'),
-          tags: (fd.get('tags') || '').split(/\s+/).filter(Boolean),
-        });
-        toast(`已创建 ${code}`, 'success');
-        close();
+        try {
+          const result = await addRequirement({
+            // 不传 code —— 让后端自动生成，避免唯一约束冲突
+            title: fd.get('title'),
+            business_line: fd.get('business_line'),
+            status: fd.get('status'),
+            priority: fd.get('priority'),
+            owner: fd.get('owner'),
+            dev_owner: fd.get('dev_owner'),
+            planned_start: fd.get('planned_start') || null,
+            planned_end: fd.get('planned_end') || null,
+            description: fd.get('description'),
+            tags: (fd.get('tags') || '').split(/\s+/).filter(Boolean),
+          });
+          toast(`已创建 ${result?.code || '新需求'}`, 'success');
+          close();
+        } catch (e) {
+          toast(`创建失败：${e.message || e}`, 'error');
+        }
       }
     });
   });

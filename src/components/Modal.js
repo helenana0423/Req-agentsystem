@@ -14,7 +14,7 @@ export function openModal({ title, icon, content, confirmText = '确认', cancel
           ${icon ? `<span class="text-lg">${icon}</span>` : ''}
           <h3 class="text-base font-semibold text-gray-900">${title}</h3>
         </div>
-        <button class="btn-icon modal-close"><i class="lucide lucide-x"></i></button>
+        <button class="btn-icon modal-close" title="关闭" style="font-size:18px;line-height:1;">×</button>
       </div>
       <div class="flex-1 overflow-y-auto p-5">${content}</div>
       ${hideFooter ? '' : `

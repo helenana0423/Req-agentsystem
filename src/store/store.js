@@ -16,6 +16,17 @@ function notifyError(msg) {
     import('../utils/helpers.js').then(({ toast }) => toast(msg, 'error', 3500));
   } catch {}
 }
+
+// 生成下一个 REQ 编号（仅乐观更新/离线模式用，在线模式后端会覆盖）
+function generateNextCode() {
+  const year = new Date().getFullYear();
+  const nums = state.requirements
+    .map(r => r.code && r.code.match(new RegExp(`REQ-${year}-(\\d+)`)))
+    .filter(Boolean)
+    .map(m => parseInt(m[1]));
+  const next = (nums.length ? Math.max(...nums) : 0) + 1;
+  return `REQ-${year}-${String(next).padStart(4, '0')}`;
+}
 import {
   fetchConfig,
   fetchRequirements, createRequirement as apiCreateReq,
@@ -277,9 +288,10 @@ function isOnline() {
 
 export async function addRequirement(req) {
   const tempId = uuid();
+  const tempCode = req.code || generateNextCode();
   const optimistic = {
     id: tempId,
-    code: req.code || '',
+    code: tempCode,
     title: req.title,
     business_line: req.business_line || '其他',
     owner: req.owner || state.settings.currentUser,
