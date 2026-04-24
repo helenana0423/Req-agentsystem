@@ -1,0 +1,23 @@
+# Render Blueprint — ReqBoard 需求管理看板
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: reqboard
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.4"
+      - key: LLM_ENABLED
+        sync: false
+      - key: LLM_PROVIDER
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: LLM_EXTRACT_MODEL
+        sync: false
