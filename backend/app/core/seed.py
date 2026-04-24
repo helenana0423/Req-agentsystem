@@ -73,8 +73,14 @@ REQUIREMENTS_SEED = [
          source="2026-04-05 合规通知", tags=_tags(["合规", "实名", "防沉迷"]),
          planned_start=d(-14), planned_end=d(12), actual_start=d(-13),
          progress=55, estimated_days=22, created_at=t(-20), updated_at=t(0)),
-    # Nikke 业务线的需求由 backend/scripts/import_nikke_pool.py 从真实 Excel 导入，
-    # seed 不再写入假 Nikke 数据，避免清库重启后覆盖真实数据。
+    dict(id="req-007", code="REQ-2026-0048", title="Nikke - 客户端崩溃上报链路重构",
+         business_line="Nikke", owner="陈思远", dev_owner="孙浩",
+         status="已立项", priority="P2",
+         description="Nikke 现有崩溃上报基于老 Bugly 方案，升级为自研链路 + 自动聚合，解决设备型号分布统计缺失问题。",
+         scope="一期：链路打通 + 基础聚合；崩溃智能归因放 v1.2。",
+         source="2026-04-16 质量周会", tags=_tags(["质量", "重构"]),
+         planned_start=d(5), planned_end=d(30), expected_release=d(30),
+         progress=10, estimated_days=18, created_at=t(-6), updated_at=t(-2)),
     dict(id="req-008", code="REQ-2026-0049", title="Honor of Kings - 充值异常补单优化",
          business_line="Honor of Kings", owner="张涵", dev_owner="林芸",
          status="开发中", priority="P1",
@@ -83,6 +89,14 @@ REQUIREMENTS_SEED = [
          source="2026-04-01 充值事故复盘", tags=_tags(["支付", "客诉"]),
          planned_start=d(-10), planned_end=d(10), actual_start=d(-10),
          progress=45, estimated_days=15, created_at=t(-14), updated_at=t(-1)),
+    dict(id="req-009", code="REQ-2026-0050", title="Nikke - 新角色卡池埋点规范化",
+         business_line="Nikke", owner="陈思远", dev_owner="吴芳",
+         status="已立项", priority="P2",
+         description="提供自助式埋点校验工具，帮 PM/策划/测试验证新角色卡池的关键埋点（首抽、抽卡转化、保底触发）是否符合规范。",
+         scope="范围：校验规则引擎、可视化diff、规范文档绑定。",
+         source="2026-04-10 数据周会", tags=_tags(["数据", "埋点", "卡池"]),
+         planned_start=d(8), planned_end=d(28), expected_release=d(28),
+         progress=10, estimated_days=16, created_at=t(-10), updated_at=t(-4)),
     dict(id="req-010", code="REQ-2026-0051", title="GunStar - 全球本地化翻译管理平台",
          business_line="GunStar", owner="Helena", dev_owner="李明",
          status="待评审", priority="P2",
@@ -116,7 +130,8 @@ DEPENDENCIES_SEED = [
          note="活动配置完成后再联调", created_by="Helena", created_at=t(-5)),
     dict(id="dep-003", from_id="req-002", to_id="req-004", dep_type="FS", lag_days=0,
          note="海外推送就绪后再投放", created_by="Helena", created_at=t(-5)),
-    # dep-004 已移除（依赖被删除的 Nikke seed 数据 req-007/req-009）
+    dict(id="dep-004", from_id="req-007", to_id="req-009", dep_type="SS", lag_days=3,
+         note="两边共用基础埋点组件", created_by="陈思远", created_at=t(-6)),
 ]
 
 BLOCKERS_SEED = [
