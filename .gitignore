@@ -1,0 +1,37 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ===== 环境变量 / 密钥 =====
+.env
+
+# ===== 数据库（SQLite 文件，本地数据不提交）=====
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== IDE / 编辑器 =====
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ===== WorkBuddy 运行时数据（不属项目源码）=====
+.workbuddy/
+
+# ===== 前端依赖（纯原生 JS 项目，无 node_modules）=====
+node_modules/
+
+# ===== 日志 =====
+*.log
+logs/
